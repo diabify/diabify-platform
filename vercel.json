@@ -1,0 +1,19 @@
+{
+  "name": "diabify-platform",
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "env": {
+    "DATABASE_URL": "@database_url"
+  },
+  "functions": {
+    "src/app/api/**/*.ts": {
+      "maxDuration": 10
+    }
+  },
+  "regions": ["iad1"]
+}
