@@ -1,103 +1,238 @@
-import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
+import { 
+  Users, 
+  BookOpen, 
+  MessageSquare, 
+  CheckCircle,
+  ArrowRight
+} from "lucide-react";
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="flex flex-col">
+      {/* Hero Section */}
+      <section className="bg-gradient-to-b from-blue-50 to-white py-20">
+        <div className="container mx-auto px-4 text-center">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+              Tu aliado en el cuidado de la 
+              <span className="text-blue-600"> diabetes</span>
+            </h1>
+            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+              Conecta con profesionales especializados y accede a recursos personalizados 
+              para gestionar tu diabetes de forma efectiva y mejorar tu calidad de vida.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" asChild>
+                <Link href="/test">
+                  <MessageSquare className="mr-2 h-5 w-5" />
+                  Hacer Test Personalizado
+                </Link>
+              </Button>
+              <Button size="lg" variant="outline" asChild>
+                <Link href="/profesionales">
+                  <Users className="mr-2 h-5 w-5" />
+                  Ver Profesionales
+                </Link>
+              </Button>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+            <div>
+              <div className="text-3xl font-bold text-blue-600 mb-2">500+</div>
+              <div className="text-gray-600">Usuarios Activos</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-blue-600 mb-2">50+</div>
+              <div className="text-gray-600">Profesionales</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-blue-600 mb-2">1000+</div>
+              <div className="text-gray-600">Sesiones Completadas</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-blue-600 mb-2">4.8</div>
+              <div className="text-gray-600">Valoración Media</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Services Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Todo lo que necesitas en un solo lugar
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Servicios especializados para cada tipo de diabetes y necesidades específicas
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <Users className="h-12 w-12 text-blue-600 mb-4" />
+                <CardTitle>Profesionales Especializados</CardTitle>
+                <CardDescription>
+                  Dietistas, nutricionistas, educadores y entrenadores especializados en diabetes
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li className="flex items-center">
+                    <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                    Sesiones online personalizadas
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                    Profesionales verificados
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                    Seguimiento continuo
+                  </li>
+                </ul>
+                <Button className="w-full mt-4" variant="outline" asChild>
+                  <Link href="/profesionales">
+                    Explorar Profesionales
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <BookOpen className="h-12 w-12 text-blue-600 mb-4" />
+                <CardTitle>Recursos Especializados</CardTitle>
+                <CardDescription>
+                  Guías, menús, libros y contenido educativo adaptado a tu tipo de diabetes
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li className="flex items-center">
+                    <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                    Guías nutricionales
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                    Menús personalizados
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                    Material educativo
+                  </li>
+                </ul>
+                <Button className="w-full mt-4" variant="outline" asChild>
+                  <Link href="/recursos">
+                    Ver Recursos
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <MessageSquare className="h-12 w-12 text-blue-600 mb-4" />
+                <CardTitle>Test Personalizado</CardTitle>
+                <CardDescription>
+                  Descubre qué servicios y recursos se adaptan mejor a tus necesidades específicas
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li className="flex items-center">
+                    <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                    Evaluación personalizada
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                    Recomendaciones específicas
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                    Plan de acción personalizado
+                  </li>
+                </ul>
+                <Button className="w-full mt-4" asChild>
+                  <Link href="/test">
+                    Empezar Test
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Types of Diabetes Section */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Especialistas para cada tipo de diabetes
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Atención específica según tu diagnóstico y necesidades particulares
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            {[
+              { name: "Diabetes Tipo 1", icon: "🩸", description: "Manejo con insulina" },
+              { name: "Diabetes Tipo 2", icon: "📊", description: "Control metabólico" },
+              { name: "Diabetes Gestacional", icon: "🤱", description: "Embarazo saludable" },
+              { name: "Prediabetes", icon: "⚠️", description: "Prevención activa" },
+              { name: "Diabetes Infantil", icon: "👶", description: "Cuidado pediátrico" },
+            ].map((type, index) => (
+              <Card key={index} className="text-center hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="text-4xl mb-4">{type.icon}</div>
+                  <h3 className="font-semibold text-gray-900 mb-2">{type.name}</h3>
+                  <p className="text-sm text-gray-600">{type.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-blue-600 text-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Comienza tu camino hacia un mejor control de la diabetes
+          </h2>
+          <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
+            Únete a nuestra comunidad y accede a profesionales y recursos especializados
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" variant="secondary" asChild>
+              <Link href="/register">
+                Registrarse Gratis
+              </Link>
+            </Button>
+            <Button size="lg" variant="outline" className="bg-transparent text-white border-white hover:bg-white hover:text-blue-600" asChild>
+              <Link href="/test">
+                Hacer Test Personalizado
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
