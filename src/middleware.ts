@@ -18,12 +18,12 @@ const PUBLIC_ROUTES = [
   '/favicon.ico',
   '/preview',
   '/login',              // Página de login debe ser pública
-  '/newsletter',         // TEMPORALMENTE público para testing
 ];
 
-// Rutas que requieren autenticación de administrador (temporalmente vacío)
+// Rutas que requieren autenticación de administrador
 const ADMIN_ROUTES: string[] = [
-  // '/newsletter',  // Deshabilitado temporalmente
+  '/newsletter',         // Dashboard del newsletter protegido
+  '/dashboard',          // Panel de administración general
 ];
 
 export function middleware(request: NextRequest) {
