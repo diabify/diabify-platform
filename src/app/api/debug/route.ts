@@ -10,13 +10,22 @@ export async function GET() {
       SMTP_PORT: !!process.env.SMTP_PORT,
       SMTP_USER: !!process.env.SMTP_USER,
       SMTP_PASS: !!process.env.SMTP_PASS,
+      ADMIN_CREATION_SECRET: !!process.env.ADMIN_CREATION_SECRET,
+      ADMIN_SECRET_LENGTH: process.env.ADMIN_CREATION_SECRET?.length || 0,
     };
+
+    // Obtener todos los usuarios para debug
+    const { prisma } = await import('@/lib/prisma');
+    const allUsers = await prisma.user.findMany({
+      select: { id: true, email: true, name: true, role: true, createdAt: true }
+    });
 
     return NextResponse.json({
       status: 'OK',
       timestamp: new Date().toISOString(),
       environment: 'production',
       envVariables: envCheck,
+      allUsers,
       message: 'Debug endpoint working'
     });
 

@@ -56,6 +56,14 @@ export default function Header({ user }: HeaderProps) {
           >
             Sobre Nosotros
           </Link>
+          {/* Admin Link - Solo visible en desarrollo/testing */}
+          <Link 
+            href="/admin" 
+            className="text-blue-600 hover:text-blue-700 transition-colors text-sm font-medium"
+            title="Panel de Administración"
+          >
+            🔧 Admin
+          </Link>
         </nav>
 
         {/* User Actions */}
