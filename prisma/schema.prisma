@@ -1,6 +1,3 @@
-// Diabify 2.0 - Prisma Schema
-// Plataforma de asesoramiento y atención personalizada para diabetes
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,7 +7,174 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ===== ENUMS =====
+model User {
+  id                  String             @id @default(cuid())
+  email               String             @unique
+  name                String?
+  avatar              String?
+  role                UserRole           @default(USER)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  assessments         Assessment[]
+  healthProfile       HealthProfile?
+  payments            Payment[]
+  professional        Professional?
+  downloadedResources ResourceDownload[]
+  sessionsAsClient    Session[]          @relation("ClientSessions")
+
+  @@map("users")
+}
+
+model Professional {
+  id           String                  @id @default(cuid())
+  userId       String                  @unique
+  type         ProfessionalType
+  description  String?
+  experience   Int?
+  rating       Float?                  @default(0)
+  hourlyRate   Float?
+  verified     Boolean                 @default(false)
+  verifiedAt   DateTime?
+  availability Json?
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
+  specialties  ProfessionalSpecialty[]
+  user         User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions     Session[]
+
+  @@map("professionals")
+}
+
+model HealthProfile {
+  id           String        @id @default(cuid())
+  userId       String        @unique
+  diabetesType DiabetesType?
+  diagnosedAt  DateTime?
+  weight       Float?
+  height       Float?
+  age          Int?
+  goals        String
+  medications  String
+  allergies    String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("health_profiles")
+}
+
+model Resource {
+  id           String             @id @default(cuid())
+  title        String
+  description  String?
+  type         ResourceType
+  fileUrl      String?
+  thumbnailUrl String?
+  price        Float?             @default(0)
+  tags         String
+  requiresAuth Boolean            @default(true)
+  premiumOnly  Boolean            @default(false)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  downloads    ResourceDownload[]
+
+  @@map("resources")
+}
+
+model ResourceDownload {
+  id           String   @id @default(cuid())
+  userId       String
+  resourceId   String
+  downloadedAt DateTime @default(now())
+  resource     Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, resourceId])
+  @@map("resource_downloads")
+}
+
+model Session {
+  id             String        @id @default(cuid())
+  clientId       String
+  professionalId String
+  title          String
+  description    String?
+  scheduledAt    DateTime
+  duration       Int           @default(60)
+  status         SessionStatus @default(SCHEDULED)
+  price          Float
+  meetingUrl     String?
+  recordingUrl   String?
+  notes          String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  payment        Payment?
+  client         User          @relation("ClientSessions", fields: [clientId], references: [id], onDelete: Cascade)
+  professional   Professional  @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Payment {
+  id                 String        @id @default(cuid())
+  userId             String
+  sessionId          String?       @unique
+  amount             Float
+  currency           String        @default("EUR")
+  status             PaymentStatus @default(PENDING)
+  stripePaymentId    String?       @unique
+  professionalAmount Float?
+  platformAmount     Float?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  session            Session?      @relation(fields: [sessionId], references: [id])
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model Assessment {
+  id        String   @id @default(cuid())
+  userId    String?
+  responses Json
+  results   Json
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("assessments")
+}
+
+model ProfessionalSpecialty {
+  id             String       @id @default(cuid())
+  professionalId String
+  diabetesType   DiabetesType
+  description    String?
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  @@unique([professionalId, diabetesType])
+  @@map("professional_specialties")
+}
+
+model Newsletter {
+  id          String           @id @default(cuid())
+  email       String           @unique
+  source      NewsletterSource @default(MAINTENANCE_PAGE)
+  ipAddress   String?
+  userAgent   String?
+  isActive    Boolean          @default(true)
+  isVerified  Boolean          @default(false)
+  verifyToken String?          @unique
+  spamScore   Float            @default(0)
+  isBlocked   Boolean          @default(false)
+  blockReason String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  verifiedAt  DateTime?
+  interests   String[]
+
+  @@map("newsletter_subscriptions")
+}
+
 enum UserRole {
   VISITOR
   USER
@@ -58,197 +222,10 @@ enum PaymentStatus {
   REFUNDED
 }
 
-// ===== MODELOS PRINCIPALES =====
-
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  avatar    String?
-  role      UserRole @default(USER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Perfil de salud
-  healthProfile HealthProfile?
-  
-  // Relación con Professional
-  professional Professional?
-  
-  // Sesiones como cliente
-  sessionsAsClient Session[] @relation("ClientSessions")
-  
-  // Recursos descargados
-  downloadedResources ResourceDownload[]
-  
-  // Pagos realizados
-  payments Payment[]
-  
-  // Test realizados
-  assessments Assessment[]
-
-  @@map("users")
-}
-
-model Professional {
-  id          String           @id @default(cuid())
-  userId      String           @unique
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  type        ProfessionalType
-  description String?
-  experience  Int?             // años de experiencia
-  rating      Float?           @default(0)
-  hourlyRate  Float?
-  
-  // Verificación
-  verified    Boolean          @default(false)
-  verifiedAt  DateTime?
-  
-  // Configuración
-  availability Json?           // horarios disponibles
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Sesiones como profesional
-  sessions Session[]
-  
-  // Especialidades
-  specialties ProfessionalSpecialty[]
-
-  @@map("professionals")
-}
-
-model HealthProfile {
-  id           String        @id @default(cuid())
-  userId       String        @unique
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  diabetesType DiabetesType?
-  diagnosedAt  DateTime?
-  weight       Float?
-  height       Float?
-  age          Int?
-  goals        String[]      // objetivos del usuario
-  medications  String[]      // medicamentos actuales
-  allergies    String[]      // alergias
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("health_profiles")
-}
-
-model Resource {
-  id          String       @id @default(cuid())
-  title       String
-  description String?
-  type        ResourceType
-  fileUrl     String?      // URL del archivo
-  thumbnailUrl String?     // miniatura
-  price       Float?       @default(0) // 0 = gratis
-  tags        String[]     // etiquetas para filtrado
-  
-  // Restricciones de acceso
-  requiresAuth Boolean @default(true)
-  premiumOnly  Boolean @default(false)
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Descargas
-  downloads ResourceDownload[]
-
-  @@map("resources")
-}
-
-model ResourceDownload {
-  id         String   @id @default(cuid())
-  userId     String
-  resourceId String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-  
-  downloadedAt DateTime @default(now())
-
-  @@unique([userId, resourceId])
-  @@map("resource_downloads")
-}
-
-model Session {
-  id             String        @id @default(cuid())
-  clientId       String
-  professionalId String
-  client         User          @relation("ClientSessions", fields: [clientId], references: [id], onDelete: Cascade)
-  professional   Professional  @relation(fields: [professionalId], references: [id], onDelete: Cascade)
-  
-  title          String
-  description    String?
-  scheduledAt    DateTime
-  duration       Int           @default(60) // minutos
-  status         SessionStatus @default(SCHEDULED)
-  price          Float
-  
-  // URLs de videollamada
-  meetingUrl     String?
-  recordingUrl   String?
-  
-  // Notas de la sesión
-  notes          String?
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Pago asociado
-  payment Payment?
-
-  @@map("sessions")
-}
-
-model Payment {
-  id        String        @id @default(cuid())
-  userId    String
-  sessionId String?       @unique
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  session   Session?      @relation(fields: [sessionId], references: [id])
-  
-  amount           Float
-  currency         String        @default("EUR")
-  status           PaymentStatus @default(PENDING)
-  stripePaymentId  String?       @unique
-  
-  // Para split payments (comisiones)
-  professionalAmount Float?      // cantidad para el profesional
-  platformAmount     Float?      // comisión de la plataforma
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("payments")
-}
-
-model Assessment {
-  id        String   @id @default(cuid())
-  userId    String?  // puede ser anónimo
-  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  responses Json     // respuestas del test
-  results   Json     // resultados y recomendaciones
-  
-  createdAt DateTime @default(now())
-
-  @@map("assessments")
-}
-
-model ProfessionalSpecialty {
-  id             String       @id @default(cuid())
-  professionalId String
-  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
-  
-  diabetesType   DiabetesType
-  description    String?
-
-  @@unique([professionalId, diabetesType])
-  @@map("professional_specialties")
+enum NewsletterSource {
+  MAINTENANCE_PAGE
+  LANDING_PAGE
+  BLOG
+  SOCIAL_MEDIA
+  REFERRAL
 }
