@@ -2,6 +2,10 @@
 
 Una plataforma integral especializada en asesoramiento y atención personalizada para personas con diabetes tipo 1, tipo 2, diabetes infantil, prediabetes, diabetes gestacional, y también para personas con problemas de sobrepeso.
 
+## ✨ Sistema de Profesionales Implementado
+
+**Nuevo**: Sistema completo de gestión de profesionales con APIs avanzadas, filtros, verificación y frontend responsivo.
+
 ## 🎯 Características Principales
 
 ### 👥 Para Usuarios
