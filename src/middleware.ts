@@ -4,7 +4,8 @@ import { NextRequest, NextResponse } from 'next/server';
 const ALLOWED_IPS = [
   '127.0.0.1',           // Localhost
   '::1',                 // IPv6 localhost
-  '93.176.157.194',      // Tu IP actual
+  '93.176.157.194',      // Tu IP actual (oficina)
+  '147.161.65.28',       // Tu IP actual (casa)
   // Agrega aquí más IPs que necesites autorizar
   // '192.168.1.100',    // Ejemplo de IP de oficina
   // '203.0.113.1',      // Ejemplo de IP externa
