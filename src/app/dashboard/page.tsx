@@ -5,7 +5,6 @@ import {
   Users, 
   Mail, 
   Shield, 
-  TrendingUp,
   Calendar,
   Globe,
   AlertTriangle 
