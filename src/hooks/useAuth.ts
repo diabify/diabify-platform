@@ -23,30 +23,41 @@ export function useAuth() {
 
   const checkAuth = () => {
     try {
-      // Para el cliente, seguimos usando localStorage como fallback
-      // Pero el middleware usará las cookies httpOnly
-      const token = localStorage.getItem('adminToken');
-      const expiry = localStorage.getItem('adminTokenExpiry');
+      // Verificar tanto admin como user tokens
+      const adminToken = localStorage.getItem('adminToken');
+      const adminExpiry = localStorage.getItem('adminTokenExpiry');
+      
+      // Verificar token de usuario de las cookies
+      const userToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('userToken='))
+        ?.split('=')[1];
 
-      if (!token || !expiry) {
-        setAuthState({ isAuthenticated: false, isLoading: false, token: null });
+      // Verificar admin token primero
+      if (adminToken && adminExpiry) {
+        const expiryTime = parseInt(adminExpiry);
+        const now = Date.now();
+
+        if (now <= expiryTime) {
+          setAuthState({ isAuthenticated: true, isLoading: false, token: adminToken });
+          console.log('🔐 Admin autenticado');
+          return;
+        } else {
+          // Token de admin expirado
+          localStorage.removeItem('adminToken');
+          localStorage.removeItem('adminTokenExpiry');
+        }
+      }
+
+      // Verificar user token
+      if (userToken) {
+        setAuthState({ isAuthenticated: true, isLoading: false, token: userToken });
+        console.log('🔐 Usuario autenticado');
         return;
       }
 
-      const expiryTime = parseInt(expiry);
-      const now = Date.now();
-
-      if (now > expiryTime) {
-        // Token expirado
-        localStorage.removeItem('adminToken');
-        localStorage.removeItem('adminTokenExpiry');
-        setAuthState({ isAuthenticated: false, isLoading: false, token: null });
-        return;
-      }
-
-      // Token válido
-      setAuthState({ isAuthenticated: true, isLoading: false, token });
-      console.log('🔐 Usuario autenticado con token:', token.substring(0, 8) + '...');
+      // No hay tokens válidos
+      setAuthState({ isAuthenticated: false, isLoading: false, token: null });
     } catch (error) {
       console.error('Error checking auth:', error);
       setAuthState({ isAuthenticated: false, isLoading: false, token: null });

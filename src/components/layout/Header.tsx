@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -9,17 +11,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Heart, Menu, User, LogOut, Settings } from 'lucide-react';
+import { Heart, Menu, User, LogOut, Settings, Calendar, Home } from 'lucide-react';
+import { useUser } from '@/hooks/useUser';
 
-interface HeaderProps {
-  user?: {
-    name?: string;
-    email: string;
-    avatar?: string;
-  } | null;
-}
+export default function Header() {
+  const { user, isLoading, isAuthenticated, logout } = useUser();
 
-export default function Header({ user }: HeaderProps) {
+  const handleLogout = () => {
+    logout();
+  };
   return (
     <header className="border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -38,6 +38,14 @@ export default function Header({ user }: HeaderProps) {
           >
             Profesionales
           </Link>
+          {user && (
+            <Link 
+              href="/citas" 
+              className="text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              Mis Citas
+            </Link>
+          )}
           <Link 
             href="/recursos" 
             className="text-gray-600 hover:text-gray-900 transition-colors"
@@ -68,7 +76,11 @@ export default function Header({ user }: HeaderProps) {
 
         {/* User Actions */}
         <div className="flex items-center space-x-4">
-          {user ? (
+          {isLoading ? (
+            <div className="flex items-center space-x-2">
+              <div className="animate-pulse h-8 w-8 bg-gray-200 rounded-full"></div>
+            </div>
+          ) : isAuthenticated && user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -83,23 +95,40 @@ export default function Header({ user }: HeaderProps) {
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.name}</p>
+                    <p className="text-sm font-medium leading-none">{user.name || 'Usuario'}</p>
                     <p className="text-xs leading-none text-muted-foreground">
                       {user.email}
                     </p>
+                    {user.isVerified && (
+                      <span className="text-xs text-green-600">✓ Verificado</span>
+                    )}
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Perfil</span>
+                <DropdownMenuItem asChild>
+                  <Link href="/user-dashboard" className="flex items-center">
+                    <Home className="mr-2 h-4 w-4" />
+                    <span>Dashboard</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/citas" className="flex items-center">
+                    <Calendar className="mr-2 h-4 w-4" />
+                    <span>Mis Citas</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/perfil" className="flex items-center">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Perfil</span>
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Configuración</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Cerrar sesión</span>
                 </DropdownMenuItem>

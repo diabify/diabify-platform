@@ -44,6 +44,7 @@ export interface User {
   name?: string;
   avatar?: string;
   role: UserRole;
+  isVerified?: boolean;
   createdAt: Date;
   updatedAt: Date;
   healthProfile?: HealthProfile;

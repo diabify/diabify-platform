@@ -189,40 +189,13 @@ export async function POST(request: NextRequest) {
       })
     ]);
 
-    // Crear algunas sesiones de ejemplo para dar historial
-    const sessions = await Promise.all([
-      prisma.session.create({
-        data: {
-          clientId: professionalUsers[0].id, // Usar un usuario existente como cliente
-          professionalId: professionals[0].id,
-          title: 'Consulta inicial diabetes tipo 1',
-          description: 'Evaluación inicial y ajuste de tratamiento',
-          scheduledAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Hace 7 días
-          duration: 60,
-          status: 'COMPLETED',
-          price: 80.0,
-          notes: 'Paciente bien controlado, ajustar dosis de insulina'
-        }
-      }),
-      prisma.session.create({
-        data: {
-          clientId: professionalUsers[1].id,
-          professionalId: professionals[1].id,
-          title: 'Plan nutricional personalizado',
-          description: 'Diseño de plan alimentario',
-          scheduledAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // Hace 3 días
-          duration: 45,
-          status: 'COMPLETED',
-          price: 45.0,
-          notes: 'Plan nutricional entregado, seguimiento en 2 semanas'
-        }
-      })
-    ]);
+    // TODO: Las sesiones se crearán después de tener las plantillas de sesión
+    // const sessions = await Promise.all([...]);
 
     console.log('✅ Professionals seeded successfully:', {
       users: professionalUsers.length,
       professionals: professionals.length,
-      sessions: sessions.length
+      sessions: 0 // sessions.length
     });
 
     return NextResponse.json({
@@ -230,7 +203,7 @@ export async function POST(request: NextRequest) {
       data: {
         users: professionalUsers.length,
         professionals: professionals.length,
-        sessions: sessions.length
+        sessions: 0 // sessions.length
       }
     });
 

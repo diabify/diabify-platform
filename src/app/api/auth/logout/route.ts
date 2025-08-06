@@ -6,7 +6,7 @@ export async function POST() {
       message: 'Logout exitoso'
     });
 
-    // Limpiar cookie
+    // Limpiar cookie de admin
     response.cookies.set('adminToken', '', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -14,7 +14,16 @@ export async function POST() {
       maxAge: 0 // Expira inmediatamente
     });
 
-    console.log('🔐 Usuario desconectado y cookie limpiada');
+    // Limpiar cookie de usuario
+    response.cookies.set('userToken', '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 0, // Expira inmediatamente
+      path: '/'
+    });
+
+    console.log('🔐 Usuario desconectado y cookies limpiadas');
     
     return response;
 

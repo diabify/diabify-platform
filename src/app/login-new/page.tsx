@@ -69,9 +69,9 @@ function LoginForm() {
       const data = await response.json();
 
       if (response.ok) {
-        console.log('✅ Login successful, redirecting to user dashboard');
-        // Redirigir al dashboard de usuario
-        window.location.href = '/user-dashboard';
+        console.log('✅ Login successful, redirecting to:', redirectPath);
+        // Forzar recarga para que el middleware detecte la cookie
+        window.location.href = redirectPath;
       } else {
         setError(data.error || 'Error de autenticación');
       }

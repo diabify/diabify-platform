@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -434,8 +435,10 @@ export default function ProfesionalesPage() {
                         {professional._count.sessions} sesiones completadas
                       </div>
                       
-                      <Button className="w-full mt-3">
-                        Ver Perfil
+                      <Button className="w-full mt-3" asChild>
+                        <Link href={`/profesionales/${professional.id}/reservar`}>
+                          Reservar Cita
+                        </Link>
                       </Button>
                     </div>
                   </CardContent>

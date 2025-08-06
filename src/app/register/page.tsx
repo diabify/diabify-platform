@@ -1,44 +1,36 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { LogIn, Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import { UserPlus, Eye, EyeOff, Mail, User } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 
-function LoginForm() {
+export default function RegisterPage() {
   const [formData, setFormData] = useState({
+    name: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
+  const [success, setSuccess] = useState('');
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { isAuthenticated } = useAuth();
-
-  const redirectPath = searchParams.get('redirect') || '/dashboard';
-  
-  // Obtener mensaje de la URL (ej: después de registro exitoso)
-  useEffect(() => {
-    const urlMessage = searchParams.get('message');
-    if (urlMessage) {
-      setMessage(urlMessage);
-    }
-  }, [searchParams]);
 
   // Si ya está autenticado, redirigir
   useEffect(() => {
     if (isAuthenticated) {
-      router.push(redirectPath);
+      router.push('/dashboard');
     }
-  }, [isAuthenticated, router, redirectPath]);
+  }, [isAuthenticated, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -49,18 +41,53 @@ function LoginForm() {
     setError(''); // Limpiar error al escribir
   };
 
+  const validateForm = () => {
+    if (!formData.name.trim()) {
+      setError('El nombre es requerido');
+      return false;
+    }
+    if (!formData.email.trim()) {
+      setError('El email es requerido');
+      return false;
+    }
+    if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      setError('El email no es válido');
+      return false;
+    }
+    if (!formData.password) {
+      setError('La contraseña es requerida');
+      return false;
+    }
+    if (formData.password.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres');
+      return false;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setError('Las contraseñas no coinciden');
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     setIsLoading(true);
     setError('');
+    setSuccess('');
 
     try {
-      const response = await fetch('/api/auth/login-new', {
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          name: formData.name.trim(),
           email: formData.email.trim().toLowerCase(),
           password: formData.password
         }),
@@ -69,14 +96,15 @@ function LoginForm() {
       const data = await response.json();
 
       if (response.ok) {
-        console.log('✅ Login successful, redirecting to user dashboard');
-        // Redirigir al dashboard de usuario
-        window.location.href = '/user-dashboard';
+        setSuccess('¡Registro exitoso! Te hemos enviado un email de verificación. Revisa tu bandeja de entrada.');
+        setTimeout(() => {
+          router.push('/login?message=Registro exitoso. Revisa tu email para verificar tu cuenta');
+        }, 3000);
       } else {
-        setError(data.error || 'Error de autenticación');
+        setError(data.error || 'Error en el registro');
       }
     } catch (error) {
-      console.error('Error during login:', error);
+      console.error('Error during registration:', error);
       setError('Error de conexión. Intenta nuevamente.');
     } finally {
       setIsLoading(false);
@@ -89,28 +117,45 @@ function LoginForm() {
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">
             <div className="bg-green-100 p-3 rounded-full">
-              <LogIn className="h-6 w-6 text-green-600" />
+              <UserPlus className="h-6 w-6 text-green-600" />
             </div>
           </div>
-          <CardTitle className="text-2xl text-center">Iniciar Sesión</CardTitle>
+          <CardTitle className="text-2xl text-center">Crear Cuenta</CardTitle>
           <CardDescription className="text-center">
-            Accede a tu cuenta de Diabify
+            Únete a Diabify y comienza a cuidar tu salud
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {message && (
-            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
-              <p className="text-sm text-green-600">{message}</p>
-            </div>
-          )}
-
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
               <p className="text-sm text-red-600">{error}</p>
             </div>
           )}
+          
+          {success && (
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+              <p className="text-sm text-green-600">{success}</p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Nombre completo</Label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  id="name"
+                  name="name"
+                  type="text"
+                  placeholder="Tu nombre completo"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className="pl-10"
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="email">Correo electrónico</Label>
               <div className="relative">
@@ -124,7 +169,6 @@ function LoginForm() {
                   onChange={handleInputChange}
                   className="pl-10"
                   disabled={isLoading}
-                  required
                 />
               </div>
             </div>
@@ -132,7 +176,6 @@ function LoginForm() {
             <div className="space-y-2">
               <Label htmlFor="password">Contraseña</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   id="password"
                   name="password"
@@ -140,9 +183,8 @@ function LoginForm() {
                   placeholder="Tu contraseña"
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="pl-10 pr-10"
+                  className="pr-10"
                   disabled={isLoading}
-                  required
                 />
                 <button
                   type="button"
@@ -157,13 +199,34 @@ function LoginForm() {
                   )}
                 </button>
               </div>
+              <p className="text-xs text-gray-500">Mínimo 6 caracteres</p>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="text-sm">
-                <Link href="/auth/forgot-password" className="text-green-600 hover:text-green-500">
-                  ¿Olvidaste tu contraseña?
-                </Link>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirma tu contraseña"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  className="pr-10"
+                  disabled={isLoading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                  disabled={isLoading}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4 text-gray-400" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-gray-400" />
+                  )}
+                </button>
               </div>
             </div>
 
@@ -175,48 +238,37 @@ function LoginForm() {
               {isLoading ? (
                 <div className="flex items-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Iniciando sesión...
+                  Creando cuenta...
                 </div>
               ) : (
-                'Iniciar sesión'
+                'Crear cuenta'
               )}
             </Button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              ¿No tienes una cuenta?{' '}
-              <Link href="/register" className="font-medium text-green-600 hover:text-green-500">
-                Regístrate aquí
+              ¿Ya tienes una cuenta?{' '}
+              <Link href="/login" className="font-medium text-green-600 hover:text-green-500">
+                Inicia sesión
               </Link>
             </p>
           </div>
 
-          {/* Separador para acceso de admin */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <div className="text-center">
-              <p className="text-xs text-gray-500 mb-2">¿Eres administrador?</p>
-              <Link href="/login-admin">
-                <Button variant="outline" size="sm" className="text-xs">
-                  Acceso de administrador
-                </Button>
+          <div className="mt-4 text-center">
+            <p className="text-xs text-gray-500">
+              Al registrarte aceptas nuestros{' '}
+              <Link href="/terms" className="underline hover:text-gray-700">
+                Términos de Servicio
+              </Link>{' '}
+              y{' '}
+              <Link href="/privacy" className="underline hover:text-gray-700">
+                Política de Privacidad
               </Link>
-            </div>
+            </p>
           </div>
         </CardContent>
       </Card>
     </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-      </div>
-    }>
-      <LoginForm />
-    </Suspense>
   );
 }
