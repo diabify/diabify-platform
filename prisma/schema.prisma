@@ -16,6 +16,8 @@ model User {
   isVerified          Boolean            @default(false)
   verificationToken   String?            // Token para verificación de email
   verificationExpires DateTime?          // Expiración del token
+  resetToken          String?            // Token para reset de contraseña
+  resetTokenExpiry    DateTime?          // Expiración del token de reset
   role                UserRole           @default(USER)
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
