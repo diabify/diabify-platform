@@ -20,7 +20,7 @@ export default function Footer() {
             <div className="flex space-x-4">
               <div className="flex items-center text-sm text-gray-300">
                 <Mail className="h-4 w-4 mr-2" />
-                hola@diabify.com
+                info@diabify.com
               </div>
             </div>
           </div>
@@ -45,6 +45,17 @@ export default function Footer() {
               <li><Link href="/privacidad" className="hover:text-white transition-colors">Privacidad</Link></li>
               <li><Link href="/terminos" className="hover:text-white transition-colors">Términos</Link></li>
             </ul>
+          </div>
+
+          {/* Contacto */}
+          <div>
+            <h3 className="font-semibold mb-4">Contacto</h3>
+            <div className="space-y-2 text-gray-300">
+              <div className="flex items-center text-sm">
+                <Mail className="h-4 w-4 mr-2" />
+                info@diabify.com
+              </div>
+            </div>
           </div>
         </div>
 

@@ -10,22 +10,14 @@ import {
   CheckCircle,
   Heart
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import MaintenanceHeader from "@/components/layout/MaintenanceHeader";
+import MaintenanceFooter from "@/components/layout/MaintenanceFooter";
 
 export default function MaintenancePage() {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-
-  useEffect(() => {
-    // Agregar clase al body para ocultar header y footer
-    document.body.classList.add('maintenance-page');
-    
-    // Limpiar al desmontar el componente
-    return () => {
-      document.body.classList.remove('maintenance-page');
-    };
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,28 +56,22 @@ export default function MaintenancePage() {
   };
 
   return (
-    <div data-maintenance="true" className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto text-center">
-          {/* Logo/Brand */}
-          <div className="mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Diabify 2.0
-            </h1>
-            <div className="w-24 h-1 bg-blue-600 mx-auto"></div>
-          </div>
-
-          {/* Main Message */}
-          <div className="mb-12">
-            <Construction className="h-20 w-20 text-blue-600 mx-auto mb-6" />
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-              Estamos preparando algo increíble
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
-              Nuestra plataforma especializada en diabetes está en desarrollo. 
-              Pronto tendrás acceso a profesionales especializados y recursos personalizados.
-            </p>
-          </div>
+    <>
+      <MaintenanceHeader />
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="container mx-auto px-4 py-16">
+          <div className="max-w-4xl mx-auto text-center">
+            {/* Main Message */}
+            <div className="mb-12">
+              <Construction className="h-20 w-20 text-blue-600 mx-auto mb-6" />
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                Estamos preparando algo increíble
+              </h2>
+              <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
+                Nuestra plataforma especializada en diabetes está en desarrollo. 
+                Pronto tendrás acceso a profesionales especializados y recursos personalizados.
+              </p>
+            </div>
 
           {/* Features Preview */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
@@ -173,17 +159,10 @@ export default function MaintenancePage() {
               Esperamos tener la versión beta disponible muy pronto.
             </p>
           </div>
-
-          {/* Footer */}
-          <div className="mt-12 text-sm text-gray-500">
-            <p className="mb-2">© 2025 Diabify. Construyendo el futuro del cuidado de la diabetes.</p>
-            <div className="flex items-center justify-center text-gray-600">
-              <Mail className="h-4 w-4 mr-2" />
-              <span>info@diabify.com</span>
-            </div>
-          </div>
         </div>
       </div>
     </div>
+    <MaintenanceFooter />
+  </>
   );
 }
