@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { prisma } from '@/lib/prisma';
+import { getBaseUrl } from '@/lib/url';
 
 // Usar la misma configuración de email que ya tienes en newsletter
 const transporter = nodemailer.createTransport({
@@ -85,7 +86,7 @@ const generateAppointmentConfirmationHTML = (data: AppointmentEmailData) => `
       </div>
 
       <div style="text-align: center; margin: 20px 0;">
-        <a href="${process.env.NEXT_PUBLIC_APP_URL}/citas" class="button">Ver Mis Citas</a>
+        <a href="${getBaseUrl()}/citas" class="button">Ver Mis Citas</a>
       </div>
 
       <p><strong>Próximos pasos:</strong></p>
@@ -138,7 +139,7 @@ export async function sendAppointmentConfirmation(data: AppointmentEmailData) {
             <p><strong>Modalidad:</strong> ${data.modality === 'ONLINE' ? 'Online' : 'Presencial'}</p>
             ${data.notes ? `<p><strong>Notas del cliente:</strong> ${data.notes}</p>` : ''}
           </div>
-          <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/admin/sessions" style="color: #2563eb;">Ver en Panel Admin</a></p>
+          <p><a href="${getBaseUrl()}/admin/sessions" style="color: #2563eb;">Ver en Panel Admin</a></p>
         </div>
       `
     });
@@ -163,7 +164,7 @@ export async function sendAppointmentCancellation(data: AppointmentEmailData) {
           <h2 style="color: #dc2626;">Cita Cancelada</h2>
           <p>Tu cita del ${data.scheduledAt.toLocaleDateString('es-ES')} con ${data.professionalName} ha sido cancelada.</p>
           <p>Puedes programar una nueva cita cuando gustes.</p>
-          <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/profesionales" style="color: #2563eb;">Buscar Profesionales</a></p>
+          <p><a href="${getBaseUrl()}/profesionales" style="color: #2563eb;">Buscar Profesionales</a></p>
         </div>
       `
     });
@@ -228,11 +229,11 @@ const generateWelcomeEmailHTML = (data: WelcomeEmailData) => `
       <div class="verification-box">
         <h3 style="color: #1d4ed8; margin-top: 0;">📧 Confirma tu cuenta</h3>
         <p>Para completar tu registro y acceder a todas las funcionalidades, por favor verifica tu dirección de email.</p>
-        <a href="${process.env.NEXT_PUBLIC_APP_URL}/auth/verify?token=${data.verificationToken}" class="button">
+        <a href="${getBaseUrl()}/auth/verify?token=${data.verificationToken}" class="button">
           Verificar mi cuenta
         </a>
         <p style="font-size: 12px; color: #666; margin-top: 15px;">
-          Si el botón no funciona, copia este enlace: ${process.env.NEXT_PUBLIC_APP_URL}/auth/verify?token=${data.verificationToken}
+          Si el botón no funciona, copia este enlace: ${getBaseUrl()}/auth/verify?token=${data.verificationToken}
         </p>
       </div>
 
@@ -298,7 +299,7 @@ export async function sendWelcomeEmail(data: WelcomeEmailData) {
 ¡Bienvenido a Diabify! Estamos emocionados de tenerte en nuestra comunidad.
 
 Para completar tu registro, por favor verifica tu cuenta haciendo clic en este enlace:
-${process.env.NEXT_PUBLIC_APP_URL}/auth/verify?token=${data.verificationToken}
+${getBaseUrl()}/auth/verify?token=${data.verificationToken}
 
 ¿Qué puedes hacer en Diabify?
 - Consultas online con profesionales verificados
