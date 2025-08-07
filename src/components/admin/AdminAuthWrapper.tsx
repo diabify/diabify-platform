@@ -29,21 +29,11 @@ export default function AdminAuthWrapper({ children }: AdminAuthWrapperProps) {
           return;
         }
 
-        // 2. Verificar sesión de usuario autenticado
-        const sessionToken = localStorage.getItem('authToken');
-        if (!sessionToken) {
-          setError('Sesión de usuario requerida');
-          setIsAuthenticated(false);
-          setIsLoading(false);
-          return;
-        }
-
-        // 3. Validar acceso admin en el backend
+        // 2. Validar token de admin directamente (sin sesión de usuario)
         const response = await fetch('/api/admin/verify-access', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${sessionToken}`
           },
           body: JSON.stringify({ adminToken })
         });
@@ -111,8 +101,8 @@ export default function AdminAuthWrapper({ children }: AdminAuthWrapperProps) {
               </p>
               <ul className="text-sm text-gray-500 space-y-1 ml-4">
                 <li>• Credenciales de administrador válidas</li>
-                <li>• Token de acceso administrativo</li>
-                <li>• Sesión de usuario activa</li>
+                <li>• Token de acceso administrativo válido</li>
+                <li>• Acceder desde el login administrativo</li>
               </ul>
             </div>
 

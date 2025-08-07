@@ -11,14 +11,53 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Heart, Menu, User, LogOut, Settings, Calendar, Home } from 'lucide-react';
+import { Heart, Menu, User, LogOut, Settings, Calendar, Home, Shield } from 'lucide-react';
 import { useUser } from '@/hooks/useUser';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function Header() {
   const { user, isLoading, isAuthenticated, logout } = useUser();
+  const [adminUser, setAdminUser] = useState<any>(null);
+  const [isAdminSession, setIsAdminSession] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Detectar sesión admin
+  useEffect(() => {
+    const adminToken = searchParams.get('token');
+    if (adminToken) {
+      // Verificar si estamos en una sesión admin válida
+      fetch('/api/admin/verify-access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminToken })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.authorized) {
+          setAdminUser(data.user);
+          setIsAdminSession(true);
+        }
+      })
+      .catch(() => {
+        setIsAdminSession(false);
+        setAdminUser(null);
+      });
+    } else {
+      setIsAdminSession(false);
+      setAdminUser(null);
+    }
+  }, [searchParams]);
 
   const handleLogout = () => {
     logout();
+  };
+
+  const handleAdminLogout = () => {
+    setIsAdminSession(false);
+    setAdminUser(null);
+    router.push('/');
   };
   return (
     <header className="border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
@@ -64,14 +103,6 @@ export default function Header() {
           >
             Sobre Nosotros
           </Link>
-          {/* Admin Link - Solo visible en desarrollo/testing */}
-          <Link 
-            href="/admin" 
-            className="text-blue-600 hover:text-blue-700 transition-colors text-sm font-medium"
-            title="Panel de Administración"
-          >
-            🔧 Admin
-          </Link>
         </nav>
 
         {/* User Actions */}
@@ -80,7 +111,47 @@ export default function Header() {
             <div className="flex items-center space-x-2">
               <div className="animate-pulse h-8 w-8 bg-gray-200 rounded-full"></div>
             </div>
+          ) : isAdminSession && adminUser ? (
+            // Admin session UI
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full bg-blue-50 border border-blue-200">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback className="bg-blue-100 text-blue-700">
+                      <Shield className="h-4 w-4" />
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <div className="flex items-center space-x-2">
+                      <Shield className="h-4 w-4 text-blue-600" />
+                      <p className="text-sm font-medium leading-none text-blue-700">Administrador</p>
+                    </div>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {adminUser.email}
+                    </p>
+                    <span className="text-xs text-blue-600">✓ Sesión Admin Activa</span>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href={`/admin?token=${searchParams.get('token')}`} className="flex items-center">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Panel Admin</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleAdminLogout} className="text-red-600">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Cerrar Sesión Admin</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : isAuthenticated && user ? (
+            // Regular user session UI
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -135,6 +206,7 @@ export default function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
+            // No session - login/register buttons
             <div className="flex items-center space-x-2">
               <Button variant="ghost" asChild>
                 <Link href="/login">Iniciar Sesión</Link>

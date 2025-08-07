@@ -19,15 +19,15 @@ export async function POST(req: NextRequest) {
     // 1. Buscar usuario con todos los campos necesarios
     const user = await prisma.user.findUnique({
       where: { email }
-    });
-    
+    }) as any; // Usar any para evitar problemas de tipos temporalmente
+
     if (!user) {
       return NextResponse.json(
         { error: 'Credenciales inválidas' },
         { status: 401 }
       );
     }
-    
+
     // 2. Verificar contraseña
     if (!user.password) {
       return NextResponse.json(
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     }
-    
+
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       return NextResponse.json(
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     }
-    
+
     // 3. Verificar rol ADMIN
     if (user.role !== 'ADMIN') {
       await logAdminAccess(user.id, 'ADMIN_ACCESS_DENIED', { email });
@@ -52,16 +52,14 @@ export async function POST(req: NextRequest) {
         { status: 403 }
       );
     }
-    
+
     // 4. Verificar email verificado
     if (!user.isVerified) {
       return NextResponse.json(
         { error: 'Email no verificado' },
         { status: 401 }
       );
-    }
-    
-    // 5. Generar token de admin
+    }    // 5. Generar token de admin
     const adminToken = generateAdminToken(user.id);
     
     // 6. Log de acceso exitoso

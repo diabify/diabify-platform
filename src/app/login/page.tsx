@@ -191,18 +191,6 @@ function LoginForm() {
               </Link>
             </p>
           </div>
-
-          {/* Separador para acceso de admin */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <div className="text-center">
-              <p className="text-xs text-gray-500 mb-2">¿Eres administrador?</p>
-              <Link href="/login-admin">
-                <Button variant="outline" size="sm" className="text-xs">
-                  Acceso de administrador
-                </Button>
-              </Link>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </div>
