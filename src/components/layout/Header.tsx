@@ -25,6 +25,8 @@ export default function Header() {
 
   // Detectar sesión admin
   useEffect(() => {
+    if (typeof window === 'undefined') return; // Evitar ejecución en SSR
+    
     const adminToken = searchParams.get('token');
     if (adminToken) {
       // Verificar si estamos en una sesión admin válida

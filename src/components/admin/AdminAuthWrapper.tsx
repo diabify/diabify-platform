@@ -15,9 +15,19 @@ export default function AdminAuthWrapper({ children }: AdminAuthWrapperProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
+
+  // Diferir el acceso a useSearchParams hasta después del montaje
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      setSearchParams(params);
+    }
+  }, []);
 
   useEffect(() => {
+    if (typeof window === 'undefined' || !searchParams) return; // Evitar ejecución en SSR
+    
     const verifyAdminAccess = async () => {
       try {
         // 1. Verificar token en URL

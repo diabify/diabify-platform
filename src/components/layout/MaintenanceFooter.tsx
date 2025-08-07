@@ -24,6 +24,8 @@ export default function MaintenanceFooter() {
   const [showFullFooter, setShowFullFooter] = useState(false);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return; // Evitar ejecución en SSR
+    
     // Verificar si debe mostrar el footer completo
     const shouldShowFull = isAuthorizedIP() || isPreviewMode();
     setShowFullFooter(shouldShowFull);

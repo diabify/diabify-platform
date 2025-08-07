@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import AdminAuthWrapper from '@/components/admin/AdminAuthWrapper';
+import AdminAuthWrapperWithSuspense from '@/components/admin/AdminAuthWrapperWithSuspense';
 import { 
   Shield, 
   Users, 
@@ -26,7 +26,7 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('templates');
 
   return (
-    <AdminAuthWrapper>
+    <AdminAuthWrapperWithSuspense>
       <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow">
@@ -145,7 +145,7 @@ const AdminDashboard = () => {
         </Card>
       </div>
     </div>
-    </AdminAuthWrapper>
+    </AdminAuthWrapperWithSuspense>
   );
 };
 

@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { CheckCircle, XCircle, Loader2, Mail } from 'lucide-react';
-import Link from 'next/link';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 
-function VerifyEmailContent() {
+function VerifyContent() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'expired'>('loading');
   const [message, setMessage] = useState('');
   const searchParams = useSearchParams();
@@ -23,7 +22,6 @@ function VerifyEmailContent() {
 
     const verifyEmail = async () => {
       try {
-        // Usar GET en lugar de POST ya que el enlace del email usa GET
         const response = await fetch(`/api/auth/verify?token=${encodeURIComponent(token)}`, {
           method: 'GET',
           headers: {
@@ -35,136 +33,127 @@ function VerifyEmailContent() {
 
         if (response.ok) {
           setStatus('success');
-          setMessage('¡Tu cuenta ha sido verificada exitosamente!');
+          setMessage(data.message || 'Email verificado correctamente');
+          
           // Redirigir al login después de 3 segundos
           setTimeout(() => {
-            router.push('/login?message=Cuenta verificada exitosamente');
+            router.push('/login?verified=true');
           }, 3000);
         } else {
-          if (data.error === 'Token expirado') {
+          if (response.status === 410) {
             setStatus('expired');
-            setMessage('El enlace de verificación ha expirado');
+            setMessage(data.error || 'El enlace de verificación ha expirado');
           } else {
             setStatus('error');
-            setMessage(data.error || 'Error en la verificación');
+            setMessage(data.error || 'Error al verificar el email');
           }
         }
       } catch (error) {
-        console.error('Error during verification:', error);
+        console.error('Error verificando email:', error);
         setStatus('error');
-        setMessage('Error de conexión. Intenta nuevamente.');
+        setMessage('Error de conexión');
       }
     };
 
     verifyEmail();
   }, [token, router]);
 
-  const resendVerificationEmail = async () => {
-    // Implementar reenvío de email de verificación
-    console.log('Resending verification email...');
+  const getIcon = () => {
+    switch (status) {
+      case 'loading':
+        return <Loader2 className="h-16 w-16 text-blue-500 animate-spin" />;
+      case 'success':
+        return <CheckCircle className="h-16 w-16 text-green-500" />;
+      case 'error':
+      case 'expired':
+        return <XCircle className="h-16 w-16 text-red-500" />;
+    }
+  };
+
+  const getTitle = () => {
+    switch (status) {
+      case 'loading':
+        return 'Verificando email...';
+      case 'success':
+        return '¡Email verificado!';
+      case 'expired':
+        return 'Enlace expirado';
+      case 'error':
+        return 'Error de verificación';
+    }
+  };
+
+  const getDescription = () => {
+    switch (status) {
+      case 'loading':
+        return 'Por favor espera mientras verificamos tu email';
+      case 'success':
+        return 'Tu email ha sido verificado correctamente. Serás redirigido al login.';
+      case 'expired':
+        return 'El enlace de verificación ha expirado. Solicita uno nuevo.';
+      case 'error':
+        return message || 'Ha ocurrido un error durante la verificación';
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-50 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center justify-center mb-4">
-            {status === 'loading' && (
-              <div className="bg-blue-100 p-3 rounded-full">
-                <Loader2 className="h-6 w-6 text-blue-600 animate-spin" />
-              </div>
-            )}
-            {status === 'success' && (
-              <div className="bg-green-100 p-3 rounded-full">
-                <CheckCircle className="h-6 w-6 text-green-600" />
-              </div>
-            )}
-            {(status === 'error' || status === 'expired') && (
-              <div className="bg-red-100 p-3 rounded-full">
-                <XCircle className="h-6 w-6 text-red-600" />
-              </div>
-            )}
+        <CardHeader className="text-center">
+          <div className="flex justify-center mb-4">
+            {getIcon()}
           </div>
-          
-          <CardTitle className="text-2xl text-center">
-            {status === 'loading' && 'Verificando cuenta...'}
-            {status === 'success' && '¡Verificación exitosa!'}
-            {status === 'error' && 'Error de verificación'}
-            {status === 'expired' && 'Enlace expirado'}
-          </CardTitle>
-          
-          <CardDescription className="text-center">
-            {message}
+          <CardTitle className="text-2xl">{getTitle()}</CardTitle>
+          <CardDescription>
+            {getDescription()}
           </CardDescription>
         </CardHeader>
         
-        <CardContent className="space-y-4">
-          {status === 'success' && (
-            <div className="text-center space-y-4">
-              <div className="p-4 bg-green-50 border border-green-200 rounded-md">
-                <p className="text-sm text-green-700">
-                  Tu cuenta está ahora verificada y puedes acceder a todas las funcionalidades de Diabify.
-                </p>
-              </div>
-              <p className="text-sm text-gray-600">
-                Serás redirigido al login automáticamente...
+        {status !== 'loading' && (
+          <CardFooter className="flex flex-col space-y-3">
+            {status === 'success' && (
+              <p className="text-sm text-gray-500 text-center">
+                Redirigiendo automáticamente...
               </p>
-              <Link href="/login">
-                <Button className="w-full bg-green-600 hover:bg-green-700">
-                  Ir al login ahora
+            )}
+            
+            {(status === 'error' || status === 'expired') && (
+              <div className="space-y-2 w-full">
+                <Button 
+                  onClick={() => router.push('/register')}
+                  className="w-full"
+                >
+                  Registrarse de nuevo
                 </Button>
-              </Link>
-            </div>
-          )}
+                <Button 
+                  variant="outline"
+                  onClick={() => router.push('/login')}
+                  className="w-full"
+                >
+                  Ir al login
+                </Button>
+              </div>
+            )}
+          </CardFooter>
+        )}
+      </Card>
+    </div>
+  );
+}
 
-          {status === 'expired' && (
-            <div className="text-center space-y-4">
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-                <p className="text-sm text-yellow-700">
-                  El enlace de verificación ha expirado. Puedes solicitar uno nuevo.
-                </p>
-              </div>
-              <Button 
-                onClick={resendVerificationEmail} 
-                className="w-full bg-blue-600 hover:bg-blue-700"
-              >
-                <Mail className="h-4 w-4 mr-2" />
-                Reenviar email de verificación
-              </Button>
-            </div>
-          )}
-
-          {status === 'error' && (
-            <div className="text-center space-y-4">
-              <div className="p-4 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-sm text-red-700">
-                  Hubo un problema con la verificación. Por favor, intenta nuevamente o contacta soporte.
-                </p>
-              </div>
-              <div className="flex space-x-2">
-                <Link href="/register" className="flex-1">
-                  <Button variant="outline" className="w-full">
-                    Volver al registro
-                  </Button>
-                </Link>
-                <Link href="/login" className="flex-1">
-                  <Button className="w-full">
-                    Ir al login
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          )}
-
-          {status === 'loading' && (
-            <div className="text-center">
-              <div className="animate-pulse space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
-              </div>
-            </div>
-          )}
-        </CardContent>
+function VerifyLoading() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <div className="flex justify-center mb-4">
+            <Loader2 className="h-16 w-16 text-blue-500 animate-spin" />
+          </div>
+          <CardTitle className="text-2xl">Cargando...</CardTitle>
+          <CardDescription>
+            Preparando verificación de email
+          </CardDescription>
+        </CardHeader>
       </Card>
     </div>
   );
@@ -172,12 +161,8 @@ function VerifyEmailContent() {
 
 export default function VerifyEmailPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    }>
-      <VerifyEmailContent />
+    <Suspense fallback={<VerifyLoading />}>
+      <VerifyContent />
     </Suspense>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import Header from './Header';
+import HeaderWrapper from './HeaderWrapper';
 import Footer from './Footer';
 
 interface LayoutWrapperProps {
@@ -20,7 +20,7 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
   
   return (
     <>
-      <Header />
+      <HeaderWrapper />
       <main className="flex-grow">
         {children}
       </main>
