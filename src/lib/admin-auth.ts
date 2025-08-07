@@ -14,7 +14,7 @@ export interface AdminUser {
  * Genera un token temporal para acceso admin
  */
 export function generateAdminToken(userId: string): string {
-  const secret = process.env.JWT_SECRET || 'fallback-secret';
+  const secret = process.env.JWT_SECRET || 'default-secret-key';
   return jwt.sign(
     { 
       userId, 
@@ -31,7 +31,7 @@ export function generateAdminToken(userId: string): string {
  */
 export function validateAdminToken(token: string): { valid: boolean; userId?: string } {
   try {
-    const secret = process.env.JWT_SECRET || 'fallback-secret';
+    const secret = process.env.JWT_SECRET || 'default-secret-key';
     const decoded = jwt.verify(token, secret) as any;
     
     if (decoded.type !== 'admin-access') {
@@ -108,7 +108,7 @@ export async function requireAdminAuth(req: NextRequest): Promise<{
     }
     
     const sessionToken = authHeader.substring(7);
-    const secret = process.env.JWT_SECRET || 'fallback-secret';
+    const secret = process.env.JWT_SECRET || 'default-secret-key';
     const sessionDecoded = jwt.verify(sessionToken, secret) as any;
     
     // 4. Verificar que coincidan los usuarios

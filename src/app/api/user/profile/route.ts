@@ -15,7 +15,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Verificar el token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default-secret') as any;
+    try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default-secret-key') as any;
     
     if (!decoded || !decoded.userId) {
       return NextResponse.json(
