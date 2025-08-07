@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "_comment": "Auto-deployment test - August 7, 2025",
   "functions": {
     "src/app/api/**/*.ts": {
       "maxDuration": 10
