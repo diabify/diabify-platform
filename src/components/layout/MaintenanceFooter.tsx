@@ -15,7 +15,7 @@ function isPreviewMode() {
   // Verificar si hay un parámetro de preview en la URL
   if (typeof window !== 'undefined') {
     const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.has('preview') || urlParams.has('admin');
+    return urlParams.has('preview') || urlParams.has('admin') || urlParams.has('token');
   }
   return false;
 }
