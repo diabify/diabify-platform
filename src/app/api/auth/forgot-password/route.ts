@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import crypto from 'crypto';
 import { sendPasswordResetEmail } from '@/lib/email';
+import { getBaseUrl } from '@/lib/url';
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Crear URL de recuperación
-    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password?token=${resetToken}`;
+    const resetUrl = `${getBaseUrl()}/auth/reset-password?token=${resetToken}`;
 
     // Enviar email de recuperación
     await sendPasswordResetEmail({

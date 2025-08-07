@@ -31,7 +31,11 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
+# Environment variables
 .env*
+!.env.development  # Incluir archivo de desarrollo (sin datos sensibles)
+!.env.production   # Incluir archivo de producción (como template)
+.env.local         # Excluir archivo local (con datos sensibles)
 
 # vercel
 .vercel
