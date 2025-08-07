@@ -36,6 +36,12 @@ interface WelcomeEmailData {
   verificationToken: string;
 }
 
+interface PasswordResetEmailData {
+  userName: string;
+  userEmail: string;
+  resetUrl: string;
+}
+
 // Plantillas de email
 const generateAppointmentConfirmationHTML = (data: AppointmentEmailData) => `
 <!DOCTYPE html>
@@ -317,5 +323,48 @@ Tu salud, nuestra prioridad`
   } catch (error) {
     console.error('❌ Error sending welcome email:', error);
     throw error;
+  }
+}
+
+export async function sendPasswordResetEmail(data: PasswordResetEmailData) {
+  try {
+    // Verificar si SMTP está configurado
+    if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.log('📧 SMTP not configured, simulating password reset email send to:', data.userEmail);
+      console.log('Reset URL would be:', data.resetUrl);
+      return; // Simular éxito para desarrollo
+    }
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM || process.env.SMTP_USER,
+      to: data.userEmail,
+      subject: 'Restablecer contraseña - Diabify',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #2563eb;">Restablecer tu contraseña</h2>
+          <p>Hola ${data.userName},</p>
+          <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta en Diabify.</p>
+          <p>Haz clic en el siguiente enlace para crear una nueva contraseña:</p>
+          <a href="${data.resetUrl}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 16px 0;">
+            Restablecer contraseña
+          </a>
+          <p style="color: #666; font-size: 14px;">
+            Este enlace expirará en 1 hora por seguridad.
+          </p>
+          <p style="color: #666; font-size: 14px;">
+            Si no solicitaste este cambio, puedes ignorar este email de forma segura.
+          </p>
+          <br>
+          <p>Saludos,<br>El equipo de Diabify</p>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log('📧 Password reset email sent successfully to:', data.userEmail);
+  } catch (error) {
+    console.error('❌ Error sending password reset email:', error);
+    // No lanzar error para evitar que falle la API en desarrollo
+    console.log('📧 Email sending failed but continuing for development purposes');
   }
 }
