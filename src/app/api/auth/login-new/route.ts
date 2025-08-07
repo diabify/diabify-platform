@@ -89,7 +89,8 @@ export async function POST(request: NextRequest) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 24 * 60 * 60, // 24 horas
-      path: '/'
+      path: '/',
+      domain: process.env.NODE_ENV === 'production' ? '.diabify.com' : undefined
     });
 
     console.log('✅ Usuario autenticado exitosamente:', user.email);

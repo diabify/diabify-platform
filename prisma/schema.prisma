@@ -12,15 +12,15 @@ model User {
   email               String             @unique
   name                String?
   avatar              String?
-  password            String?            // Para autenticación con email/password
-  isVerified          Boolean            @default(false)
-  verificationToken   String?            // Token para verificación de email
-  verificationExpires DateTime?          // Expiración del token
-  resetToken          String?            // Token para reset de contraseña
-  resetTokenExpiry    DateTime?          // Expiración del token de reset
   role                UserRole           @default(USER)
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
+  isVerified          Boolean            @default(false)
+  password            String?
+  verificationExpires DateTime?
+  verificationToken   String?
+  resetToken          String?
+  resetTokenExpiry    DateTime?
   assessments         Assessment[]
   healthProfile       HealthProfile?
   payments            Payment[]
@@ -44,10 +44,10 @@ model Professional {
   availability     Json?
   createdAt        DateTime                      @default(now())
   updatedAt        DateTime                      @updatedAt
+  sessionTemplates ProfessionalSessionTemplate[]
   specialties      ProfessionalSpecialty[]
   user             User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
   sessions         Session[]
-  sessionTemplates ProfessionalSessionTemplate[]
 
   @@map("professionals")
 }
@@ -100,7 +100,6 @@ model ResourceDownload {
   @@map("resource_downloads")
 }
 
-// Plantillas de sesiones que pueden ofrecer los profesionales
 model SessionTemplate {
   id             String                        @id @default(cuid())
   title          String
@@ -115,22 +114,21 @@ model SessionTemplate {
   isActive       Boolean                       @default(true)
   createdAt      DateTime                      @default(now())
   updatedAt      DateTime                      @updatedAt
+  professionals  ProfessionalSessionTemplate[]
   duration       SessionDuration               @relation(fields: [durationId], references: [id])
-  specialty      SessionSpecialty?             @relation(fields: [specialtyId], references: [id])
   prerequisite   SessionTemplate?              @relation("SessionPrerequisites", fields: [prerequisiteId], references: [id])
   prerequisites  SessionTemplate[]             @relation("SessionPrerequisites")
-  professionals  ProfessionalSessionTemplate[]
+  specialty      SessionSpecialty?             @relation(fields: [specialtyId], references: [id])
   sessions       Session[]
 
   @@map("session_templates")
 }
 
-// Relación many-to-many entre profesionales y plantillas de sesiones
 model ProfessionalSessionTemplate {
   id                String          @id @default(cuid())
   professionalId    String
   sessionTemplateId String
-  customPrice       Float? // Precio personalizado del profesional (opcional)
+  customPrice       Float?
   isEnabled         Boolean         @default(true)
   createdAt         DateTime        @default(now())
   professional      Professional    @relation(fields: [professionalId], references: [id], onDelete: Cascade)
@@ -140,25 +138,22 @@ model ProfessionalSessionTemplate {
   @@map("professional_session_templates")
 }
 
-// Duraciones de sesiones configurables
 model SessionDuration {
   id        String            @id @default(cuid())
-  name      String // "30 minutos", "1 hora", "2 horas"
-  minutes   Int // 30, 60, 120
+  name      String
+  minutes   Int               @unique
   isActive  Boolean           @default(true)
   createdAt DateTime          @default(now())
   templates SessionTemplate[]
 
-  @@unique([minutes])
   @@map("session_durations")
 }
 
-// Especialidades de sesiones (diferentes a las de profesionales)
 model SessionSpecialty {
   id          String            @id @default(cuid())
-  name        String // "Control glucémico", "Nutrición", "Apoyo psicológico"
+  name        String
   description String?
-  color       String? // Para UI (ej: "#3b82f6")
+  color       String?
   isActive    Boolean           @default(true)
   createdAt   DateTime          @default(now())
   templates   SessionTemplate[]
@@ -166,18 +161,17 @@ model SessionSpecialty {
   @@map("session_specialties")
 }
 
-// Sesiones reales/reservas (instancias de las plantillas)
 model Session {
   id                String          @id @default(cuid())
   clientId          String
   professionalId    String
   sessionTemplateId String
-  title             String // Copiado de la plantilla al crear
-  description       String? // Copiado de la plantilla al crear
+  title             String
+  description       String?
   scheduledAt       DateTime
-  duration          Int // Copiado de la plantilla al crear
+  duration          Int
   status            SessionStatus   @default(SCHEDULED)
-  finalPrice        Float // Precio final aplicado
+  finalPrice        Float
   meetingUrl        String?
   recordingUrl      String?
   notes             String?
@@ -292,20 +286,20 @@ enum SessionStatus {
 }
 
 enum SessionCategory {
-  CONSULTATION // Consulta general
-  INITIAL // Consulta inicial
-  FOLLOW_UP // Seguimiento
-  EMERGENCY // Emergencia
-  EDUCATION // Educación
-  NUTRITION // Nutrición
-  PSYCHOLOGY // Apoyo psicológico
-  GROUP // Sesión grupal
+  CONSULTATION
+  INITIAL
+  FOLLOW_UP
+  EMERGENCY
+  EDUCATION
+  NUTRITION
+  PSYCHOLOGY
+  GROUP
 }
 
 enum SessionModality {
-  ONLINE // Virtual
-  IN_PERSON // Presencial
-  HYBRID // Híbrida
+  ONLINE
+  IN_PERSON
+  HYBRID
 }
 
 enum PaymentStatus {

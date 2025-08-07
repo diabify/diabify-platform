@@ -49,9 +49,18 @@ export default function UserDashboard() {
         console.log('✅ User data received:', data);
         setUserData(data.user);
       } else {
-        const errorData = await response.json();
-        console.log('❌ Error response:', errorData);
-        setAuthError(errorData.error || 'Error de autenticación');
+        // Obtener texto crudo para debugging
+        const responseText = await response.text();
+        console.log('❌ Error response text:', responseText);
+        
+        try {
+          const errorData = JSON.parse(responseText);
+          console.log('❌ Error response parsed:', errorData);
+          setAuthError(errorData.error || 'Error de autenticación');
+        } catch (parseError) {
+          console.error('❌ Error parsing error response:', parseError);
+          setAuthError(`HTTP ${response.status}: ${responseText.substring(0, 50)}...`);
+        }
       }
     } catch (error) {
       console.error('❌ Error fetching user data:', error);
