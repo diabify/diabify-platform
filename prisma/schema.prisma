@@ -21,6 +21,7 @@ model User {
   verificationToken   String?
   resetToken          String?
   resetTokenExpiry    DateTime?
+  notifications       Notification[]
   assessments         Assessment[]
   healthProfile       HealthProfile?
   payments            Payment[]
@@ -177,6 +178,7 @@ model Session {
   notes             String?
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
+  notifications     Notification[]
   payment           Payment?
   client            User            @relation("ClientSessions", fields: [clientId], references: [id], onDelete: Cascade)
   professional      Professional    @relation(fields: [professionalId], references: [id], onDelete: Cascade)
@@ -226,23 +228,42 @@ model ProfessionalSpecialty {
 }
 
 model Newsletter {
-  id          String           @id @default(cuid())
-  email       String           @unique
-  source      NewsletterSource @default(MAINTENANCE_PAGE)
+  id          String    @id @default(cuid())
+  email       String    @unique
+  source      String?
   ipAddress   String?
   userAgent   String?
-  isActive    Boolean          @default(true)
-  isVerified  Boolean          @default(false)
-  verifyToken String?          @unique
-  spamScore   Float            @default(0)
-  isBlocked   Boolean          @default(false)
+  isActive    Boolean   @default(true)
+  isVerified  Boolean   @default(false)
+  verifyToken String?   @unique
+  spamScore   Float     @default(0.0)
+  isBlocked   Boolean   @default(false)
   blockReason String?
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   verifiedAt  DateTime?
-  interests   String[]
+  interests   Json?
+}
 
-  @@map("newsletter_subscriptions")
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  sessionId String?
+  type      String
+  title     String
+  message   String
+  status    String    @default("PENDING")
+  sentAt    DateTime?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  session   Session?  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sessionId])
+  @@index([type])
+  @@index([status])
 }
 
 enum UserRole {

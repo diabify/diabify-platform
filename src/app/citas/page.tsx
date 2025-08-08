@@ -27,23 +27,22 @@ interface Appointment {
   status: string;
   notes: string | null;
   finalPrice: number;
-  modality: string;
+  duration: number; // minutes
   professional: {
     id: string;
-    name: string;
-    avatar: string | null;
     type: string;
+    user: {
+      id: string;
+      name: string;
+      avatar: string | null;
+    };
   };
   sessionTemplate: {
     id: string;
     title: string;
     description: string;
     category: string;
-  };
-  duration: {
-    id: string;
-    name: string;
-    minutes: number;
+    modality: string;
   };
   specialty: {
     id: string;
@@ -76,19 +75,45 @@ export default function AppointmentsPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('upcoming');
+  const [currentUser, setCurrentUser] = useState<{id: string; name: string; email: string} | null>(null);
 
   useEffect(() => {
-    fetchAppointments();
+    fetchCurrentUser();
   }, []);
 
+  useEffect(() => {
+    if (currentUser) {
+      fetchAppointments();
+    }
+  }, [currentUser]);
+
+  const fetchCurrentUser = async () => {
+    try {
+      const response = await fetch('/api/user/profile');
+      if (response.ok) {
+        const data = await response.json();
+        setCurrentUser(data.user);
+      } else {
+        console.error('Error fetching current user:', response.status);
+        if (response.status === 401) {
+          window.location.href = '/login';
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+    }
+  };
+
   const fetchAppointments = async () => {
+    if (!currentUser) return;
+    
     try {
       setLoading(true);
       const response = await fetch('/api/appointments', {
         headers: {
-          // TODO: Agregar header de autenticación cuando esté implementado
-          // 'Authorization': `Bearer ${token}`,
-          'x-user-id': 'temp-user-id' // Temporal para testing
+          // Usar el ID del usuario autenticado dinámicamente
+          'x-user-id': currentUser.id
         }
       });
       if (response.ok) {
@@ -103,13 +128,15 @@ export default function AppointmentsPage() {
   };
 
   const updateAppointmentStatus = async (appointmentId: string, newStatus: string) => {
+    if (!currentUser) return;
+    
     try {
       const response = await fetch(`/api/appointments/${appointmentId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          // TODO: Agregar header de autenticación cuando esté implementado
-          'x-user-id': 'temp-user-id' // Temporal para testing
+          // Usar el ID del usuario autenticado dinámicamente
+          'x-user-id': currentUser.id
         },
         body: JSON.stringify({ status: newStatus })
       });
@@ -156,13 +183,15 @@ export default function AppointmentsPage() {
   };
 
   const downloadCalendarEvent = async (appointmentId: string, format: 'google' | 'ics' = 'google') => {
+    if (!currentUser) return;
+    
     try {
       const url = `/api/calendar/event/${appointmentId}${format === 'ics' ? '?format=ics' : ''}`;
       
       if (format === 'ics') {
         // Descargar archivo ICS
         const response = await fetch(url, {
-          headers: { 'x-user-id': 'temp-user-id' }
+          headers: { 'x-user-id': currentUser.id }
         });
         const blob = await response.blob();
         const downloadUrl = window.URL.createObjectURL(blob);
@@ -173,7 +202,7 @@ export default function AppointmentsPage() {
       } else {
         // Abrir Google Calendar
         const response = await fetch(url, {
-          headers: { 'x-user-id': 'temp-user-id' }
+          headers: { 'x-user-id': currentUser.id }
         });
         const data = await response.json();
         window.open(data.googleCalendarUrl, '_blank');
@@ -235,7 +264,7 @@ export default function AppointmentsPage() {
   const isUpcoming = (appointment: Appointment) => {
     const appointmentDate = new Date(appointment.scheduledAt);
     const now = new Date();
-    return appointmentDate > now && ['PENDING', 'CONFIRMED'].includes(appointment.status);
+    return appointmentDate > now && ['PENDING', 'CONFIRMED', 'SCHEDULED'].includes(appointment.status);
   };
 
   const isPast = (appointment: Appointment) => {
@@ -253,9 +282,9 @@ export default function AppointmentsPage() {
         <div className="flex items-start justify-between">
           <div className="flex items-start space-x-4 flex-1">
             <Avatar className="h-12 w-12">
-              <AvatarImage src={appointment.professional.avatar || ''} />
+              <AvatarImage src={appointment.professional.user?.avatar || ''} />
               <AvatarFallback>
-                {appointment.professional.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                {appointment.professional.user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'P'}
               </AvatarFallback>
             </Avatar>
             
@@ -268,7 +297,7 @@ export default function AppointmentsPage() {
               </div>
               
               <p className="text-gray-600 mb-2">
-                con {appointment.professional.name} • {appointment.professional.type}
+                con {appointment.professional.user?.name || 'Profesional'} • {appointment.professional.type}
               </p>
               
               <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-3">
@@ -278,15 +307,15 @@ export default function AppointmentsPage() {
                 </div>
                 <div className="flex items-center">
                   <Clock className="h-4 w-4 mr-2" />
-                  {formatTime(appointment.scheduledAt)} ({appointment.duration.name})
+                  {formatTime(appointment.scheduledAt)} ({appointment.duration} min)
                 </div>
                 <div className="flex items-center">
-                  {appointment.modality === 'ONLINE' ? (
+                  {appointment.sessionTemplate.modality === 'ONLINE' ? (
                     <Video className="h-4 w-4 mr-2" />
                   ) : (
                     <MapPin className="h-4 w-4 mr-2" />
                   )}
-                  {appointment.modality === 'ONLINE' ? 'Sesión Online' : 'Presencial'}
+                  {appointment.sessionTemplate.modality === 'ONLINE' ? 'Sesión Online' : 'Presencial'}
                 </div>
                 <div className="flex items-center">
                   <span className="text-green-600 font-semibold">
@@ -361,7 +390,7 @@ export default function AppointmentsPage() {
 
             {appointment.status === 'CONFIRMED' && isUpcoming(appointment) && (
               <>
-                {appointment.modality === 'ONLINE' && (
+                {appointment.sessionTemplate.modality === 'ONLINE' && (
                   <Button 
                     size="sm"
                     onClick={() => joinVideoCall(appointment.id)}
@@ -404,7 +433,7 @@ export default function AppointmentsPage() {
               </Button>
             )}
 
-            {appointment.modality === 'ONLINE' && ['CONFIRMED', 'IN_PROGRESS'].includes(appointment.status) && (
+            {appointment.sessionTemplate.modality === 'ONLINE' && ['CONFIRMED', 'IN_PROGRESS'].includes(appointment.status) && (
               <Button size="sm" variant="outline">
                 <Phone className="h-4 w-4 mr-1" />
                 Contactar

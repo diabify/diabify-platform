@@ -19,12 +19,17 @@ import {
 
 interface Professional {
   id: string;
-  name: string;
-  avatar: string | null;
   type: string;
   verified: boolean;
   rating: number;
   experience: number;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    avatar: string | null;
+    createdAt: string;
+  };
 }
 
 interface Service {
@@ -67,8 +72,10 @@ export default function BookingPage() {
   const [professional, setProfessional] = useState<Professional | null>(null);
   const [services, setServices] = useState<Service[]>([]);
   const [availability, setAvailability] = useState<AvailableDay[]>([]);
+  const [currentUser, setCurrentUser] = useState<{id: string; name: string; email: string} | null>(null);
   const [loading, setLoading] = useState(true);
-  const [step, setStep] = useState(1); // 1: servicio, 2: fecha/hora, 3: confirmación
+  const [step, setStep] = useState(1); // 1: servicio, 2: fecha/hora, 3: confirmación, 4: éxito
+  const [appointmentCreated, setAppointmentCreated] = useState<{id: string; scheduledAt: string} | null>(null);
 
   // Estados del booking
   const [selectedService, setSelectedService] = useState<Service | null>(null);
@@ -79,6 +86,7 @@ export default function BookingPage() {
   useEffect(() => {
     if (professionalId) {
       fetchProfessionalData();
+      fetchCurrentUser();
     }
   }, [professionalId]);
 
@@ -87,6 +95,26 @@ export default function BookingPage() {
       fetchAvailability();
     }
   }, [selectedService, step]);
+
+  const fetchCurrentUser = async () => {
+    try {
+      const response = await fetch('/api/user/profile');
+      if (response.ok) {
+        const data = await response.json();
+        setCurrentUser(data.user);
+      } else {
+        console.error('Error fetching current user:', response.status);
+        // Si no está autenticado, redirigir al login
+        if (response.status === 401) {
+          alert('Debe iniciar sesión para hacer una reserva');
+          window.location.href = '/login';
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+    }
+  };
 
   const fetchProfessionalData = async () => {
     try {
@@ -137,6 +165,12 @@ export default function BookingPage() {
 
   const createAppointment = async () => {
     if (!selectedService || !selectedSlot || !selectedDate) return;
+    
+    if (!currentUser) {
+      alert('Debe iniciar sesión para hacer una reserva');
+      window.location.href = '/login';
+      return;
+    }
 
     try {
       const appointmentData = {
@@ -151,17 +185,21 @@ export default function BookingPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // TODO: Agregar header de autenticación cuando esté implementado
-          // 'Authorization': `Bearer ${token}`,
-          'x-user-id': 'temp-user-id' // Temporal para testing
+          // Usar el ID del usuario autenticado dinámicamente
+          'x-user-id': currentUser.id
         },
         body: JSON.stringify(appointmentData)
       });
 
       if (response.ok) {
         const result = await response.json();
-        alert('¡Cita creada exitosamente!');
-        // TODO: Redirigir a confirmación o dashboard
+        // Guardar información de la cita creada
+        setAppointmentCreated({
+          id: result.appointment.id,
+          scheduledAt: result.appointment.scheduledAt
+        });
+        // Ir al paso de éxito
+        setStep(4);
       } else {
         const error = await response.json();
         alert(`Error: ${error.error}`);
@@ -223,25 +261,25 @@ export default function BookingPage() {
             </Button>
             <div className="flex items-center space-x-4">
               <Avatar className="h-16 w-16">
-                <AvatarImage src={professional.avatar || ''} />
+                <AvatarImage src={professional.user?.avatar || ''} />
                 <AvatarFallback>
-                  {professional.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                  {professional.user?.name ? professional.user.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'NA'}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <div className="flex items-center space-x-2">
-                  <h1 className="text-2xl font-bold">{professional.name}</h1>
+                  <h1 className="text-2xl font-bold">{professional.user?.name || 'Nombre no disponible'}</h1>
                   {professional.verified && (
                     <CheckCircle className="h-5 w-5 text-green-600" />
                   )}
                 </div>
                 <div className="flex items-center space-x-4 text-sm text-gray-600">
-                  <span>{professional.type}</span>
+                  <span>{professional.type || 'Tipo no especificado'}</span>
                   <span className="flex items-center">
                     <Star className="h-4 w-4 mr-1 text-yellow-500" />
-                    {professional.rating}
+                    {professional.rating || 0}
                   </span>
-                  <span>{professional.experience} años exp.</span>
+                  <span>{professional.experience || 0} años exp.</span>
                 </div>
               </div>
             </div>
@@ -252,12 +290,12 @@ export default function BookingPage() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Progress Indicator */}
         <div className="mb-8">
-          <div className="flex items-center justify-center space-x-8">
+          <div className="flex items-center justify-center space-x-6">
             <div className={`flex items-center ${step >= 1 ? 'text-blue-600' : 'text-gray-400'}`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>
                 1
               </div>
-              <span className="ml-2">Seleccionar Servicio</span>
+              <span className="ml-2">Servicio</span>
             </div>
             <div className={`flex items-center ${step >= 2 ? 'text-blue-600' : 'text-gray-400'}`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>
@@ -270,6 +308,12 @@ export default function BookingPage() {
                 3
               </div>
               <span className="ml-2">Confirmación</span>
+            </div>
+            <div className={`flex items-center ${step >= 4 ? 'text-green-600' : 'text-gray-400'}`}>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 4 ? 'bg-green-600 text-white' : 'bg-gray-200'}`}>
+                <CheckCircle className="h-5 w-5" />
+              </div>
+              <span className="ml-2">¡Listo!</span>
             </div>
           </div>
         </div>
@@ -447,6 +491,95 @@ export default function BookingPage() {
                 Confirmar Reserva
               </Button>
             </div>
+          </div>
+        )}
+
+        {/* Step 4: Éxito */}
+        {step === 4 && appointmentCreated && selectedService && (
+          <div className="max-w-2xl mx-auto">
+            <Card className="border-green-200 bg-green-50">
+              <CardContent className="p-8 text-center">
+                <div className="flex justify-center mb-6">
+                  <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center">
+                    <CheckCircle className="h-10 w-10 text-white" />
+                  </div>
+                </div>
+                
+                <h2 className="text-2xl font-bold text-green-800 mb-4">
+                  ¡Cita reservada exitosamente!
+                </h2>
+                
+                <div className="bg-white rounded-lg p-6 mb-6">
+                  <h3 className="font-semibold text-lg mb-4">Detalles de tu cita:</h3>
+                  <div className="space-y-3 text-left">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Profesional:</span>
+                      <span className="font-medium">{professional?.user?.name}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Servicio:</span>
+                      <span className="font-medium">{selectedService.title}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Fecha:</span>
+                      <span className="font-medium">{formatDate(appointmentCreated.scheduledAt)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Hora:</span>
+                      <span className="font-medium">{formatTime(appointmentCreated.scheduledAt)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Duración:</span>
+                      <span className="font-medium">{selectedService.duration.name}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Precio:</span>
+                      <span className="font-medium text-green-600">€{selectedService.finalPrice}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-blue-50 rounded-lg p-4 mb-6">
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0">
+                      <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                        <CheckCircle className="h-4 w-4 text-white" />
+                      </div>
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm text-blue-800">
+                        <strong>Email de confirmación enviado</strong><br />
+                        Hemos enviado los detalles de tu cita a tu email. También recibirás un recordatorio antes de la sesión.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
+                  <Button 
+                    onClick={() => window.location.href = '/citas'} 
+                    className="flex-1"
+                    size="lg"
+                  >
+                    Ver Mis Citas
+                  </Button>
+                  <Button 
+                    onClick={() => window.location.href = '/profesionales'} 
+                    variant="outline"
+                    className="flex-1"
+                    size="lg"
+                  >
+                    Buscar Más Profesionales
+                  </Button>
+                </div>
+                
+                <div className="mt-6 pt-6 border-t border-green-200">
+                  <p className="text-sm text-gray-600">
+                    ID de cita: <span className="font-mono text-xs">{appointmentCreated.id}</span>
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         )}
       </div>

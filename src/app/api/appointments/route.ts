@@ -94,6 +94,11 @@ export async function GET(request: NextRequest) {
               }
             }
           },
+          sessionTemplate: {
+            include: {
+              specialty: true
+            }
+          },
           payment: true
         },
         orderBy: [
